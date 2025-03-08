@@ -1,10 +1,12 @@
 import json
 from utils.prompt_builder import *
+from services.openai_client import * 
 
 def lambda_handler(event, context):
     try:
         body = json.loads(event.get("body", "{}"))
         prompt = createprompt(body=body)
+        training_plan = call_openai(prompt)
         
     except Exception as e:
         return {
