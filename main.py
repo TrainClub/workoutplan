@@ -5,7 +5,7 @@ def lambda_handler(event, context):
     try:
         body = json.loads(event.get("body", "{}"))
         prompt = createprompt(body=body)
-        print(prompt)
+        
     except Exception as e:
         return {
             "statusCode": 500,
