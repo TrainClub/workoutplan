@@ -1,13 +1,13 @@
 import json
 from utils.prompt_builder import *
-from services.openai_client import * 
+from services.OpenAIClient.openai_client import * 
 
 def lambda_handler(event, context):
     try:
         body = json.loads(event.get("body", "{}"))
         prompt = createprompt(body=body)
         training_plan = call_openai(prompt)
-
+        
         with open(r"database\output\workoutplan.json", "w", encoding="utf-8") as file:
             file.write(training_plan)
 
