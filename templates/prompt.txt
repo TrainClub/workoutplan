@@ -27,13 +27,16 @@ Gere um plano de treino semanal detalhado que siga estas diretrizes:
 ✅ Priorize a segurança, evitando exercícios que possam causar lesões ou desconforto.
 ✅ Inclua todos os principais grupos musculares, distribuindo-os eficientemente ao longo da semana.
 ✅ Modifique ou substitua exercícios que possam sobrecarregar áreas sensíveis.
+✅ Gere no minimo 4 exercício por grupo muscular no mesmo dia e no maximo 6 no mesmo dia.
+✅ Forneça treinos que serão praticados em uma academia.
 ✅ Forneça detalhes de execução para cada exercício, incluindo:
     Repetições & Séries
     Forma correta & postura
     Erros comuns a evitar
 
 📌 Formato de Resposta
-Retorne o plano de treino em formato JSON e em português. nesse modelo:
+Retorne o plano de treino em formato JSON e em português. nesse modelo
+Atenção cuidado com a formatação do json, estou usando ele em python e devo conseguir processar corretamente:
 {
   "training_plan": [
     {

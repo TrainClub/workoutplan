@@ -7,7 +7,10 @@ def lambda_handler(event, context):
         body = json.loads(event.get("body", "{}"))
         prompt = createprompt(body=body)
         training_plan = call_openai(prompt)
-        
+
+        with open(r"database\output\workoutplan.json", "w", encoding="utf-8") as file:
+            file.write(training_plan)
+
     except Exception as e:
         return {
             "statusCode": 500,
@@ -22,28 +25,29 @@ if __name__=='__main__':
         "body": json.dumps({  # Converte o dicionário para string JSON
         "new_member": {
             "personal_data": {
-                "weight": "135",
-                "height": "183"
+                "gender":"male",
+                "weight": "50",
+                "height": "162"
             },
             "user_purpose": {
                 "main_objective": "Gain Muscle",
-                "secondary_objective": "Lose Fat"
+                "secondary_objective": "Tone and define"
             },
             "training_preferences": {
-                "experience_level": "Beginner",
-                "training_frequency_per_week": 4
+                "experience_level": "intermediate",
+                "training_frequency_per_week": 5
             },
             "health_conditions": {
-                "pre_diabetes": True,
-                "high_cholesterol": True,
+                "pre_diabetes": False,
+                "high_cholesterol": False,
                 "spinal_disorder": False,
                 "hypertension": False,
                 "dizziness_or_fainting": False,
-                "other_health_issues": "Had thyroid issues in the past but no longer."
+                "other_health_issues": "Tenho desgaste na lombar e escoliose"
             },
             "affected_areas": {
-                "knee": True,
-                "shoulder": True,
+                "knee": False,
+                "shoulder": False,
                 "elbow": False,
                 "spine": False,
                 "lower_back": False
