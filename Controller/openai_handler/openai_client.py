@@ -1,6 +1,6 @@
 import openai
 from openai.error import OpenAIError, Timeout
-from services.AWSClient.aws_services import parameter_store
+from Controller.aws_handler.aws_services import parameter_store
 
 def call_openai(prompt):
     try:
@@ -11,11 +11,11 @@ def call_openai(prompt):
                 {"role": "system", "content": "Você é um personal trainer especializado em criar planos de treino personalizados."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.2,  # Controle de criatividade (0 = preciso, 1 = criativo)
-            max_tokens=2000,  # Limite de tokens na resposta
+            temperature=0.8,  # Controle de criatividade (0 = preciso, 1 = criativo)
+            max_tokens=10000,  # Limite de tokens na resposta
             n=1,  # Número de respostas
             stop=None,  # Se necessário, defina um token de parada
-            timeout=60  # Timeout para a chamada (30 segundos)
+            timeout=30  # Timeout para a chamada (30 segundos)
         )
 
         if 'choices' in response and len(response['choices']) > 0:

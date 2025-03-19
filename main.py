@@ -1,16 +1,18 @@
 import json
 from utils.prompt_builder import *
-from services.OpenAIClient.openai_client import * 
-from services.DBClient.db_client import insert_data
+from Controller.openai_handler.openai_client import * 
 
 def lambda_handler(event, context):
     try:
-        body = json.loads(event.get("body", "{}"))
-        prompt = createprompt(body=body)
+        prompt = create_prompt(body=event)
         training_plan = call_openai(prompt)
         training_plan = json.loads(training_plan.replace("`", "").replace("json", ""))
-        training_plan['user_id'] = json.loads(event['body'])['new_member']['user_data']['user_id']
-        insert_data(data=training_plan, table_name='workout_plans')
+
+        if training_plan:
+            return {
+                "statusCode":200,
+                "body":json.dumps(training_plan),
+            }
     except Exception as e:
         return {
             "statusCode": 500,
@@ -19,3 +21,7 @@ def lambda_handler(event, context):
                 "Content-Type": "application/json"
             }
         }
+    
+if __name__=='__main__':
+    event = {'new_member': {'personal_data': {'gender': 'Masculino', 'weight': '135', 'height': '183', 'date_birth': '13/04/2001'}, 'user_purpose': ['Ganho de Massa Muscular', 'Fortalecimento Muscular'], 'training_preferences': {'experience_level': 'Treinos sem rotina fixa (Intermediario)', 'training_frequency_per_week': 5}, 'health_conditions': ['Joelho', 'Ombro']}}
+    lambda_handler(event=event, context='')
