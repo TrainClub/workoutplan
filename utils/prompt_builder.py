@@ -6,20 +6,16 @@ def create_prompt(body: json) -> str:
     try:
         user_data = body.get("new_member", {})
 
-        # Define a data de nascimento do usuário para calcular a idade
         date_of_birth = user_data.get("personal_data", {}).get("date_birth", "01/01/1900")
         birth_date = datetime.strptime(date_of_birth, "%d/%m/%Y")
         age = (datetime.now() - birth_date).days // 365  # Calcula a idade em anos
 
-        # Define o diretório base e o caminho do arquivo de prompt
         base_dir = os.path.dirname(os.path.realpath(__file__))
         file_path = os.path.abspath(os.path.join(base_dir, "..", "templates", "prompt.txt"))
 
-        # Lê o template do prompt
         with open(file_path, 'r', encoding='utf-8') as file:
             prompt = file.read()
 
-        # Define os campos de dados para substituir no template
         fields = {
             "{age}": str(age),
             "{weight}": user_data.get("personal_data", {}).get("weight", "Not provided"),
@@ -41,7 +37,6 @@ def create_prompt(body: json) -> str:
             "{lower_back}": "Not provided"  # Não há dado fornecido
         }
 
-        # Substitui os placeholders no template com os dados do usuário
         for placeholder, value in fields.items():
             prompt = prompt.replace(placeholder, value)
 
