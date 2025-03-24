@@ -21,13 +21,17 @@ def lambda_handler(event, context):
 
             dynamo_helper = DynamoDBHelper('BioFit')
             for record in record_map:
-                table = processor.create_record(record)
-                if 'workout_plans' in record:
-                    for tb in table:
-                        dynamo_helper.put_item(tb)
-                else:
-                    dynamo_helper.put_item(table)
-        
+                try:
+                    print('[INFO] Importando treinos no banco de dados!')
+                    table = processor.create_record(record)
+                    if 'workout_plans' in record:
+                        for tb in table:
+                            dynamo_helper.put_item(tb)
+                    else:
+                        dynamo_helper.put_item(table)
+                except Exception as err:
+                    print(f'[ERRO] Erro durante salvando na base de dados: {err}')
+                    
     except Exception as e:
         return {
             "statusCode": 500,
