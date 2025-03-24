@@ -4,6 +4,7 @@ from datetime import datetime
 
 def create_prompt(body: json) -> str:
     try:
+        print('[INFO] Iniciando criação do Prompt')
         user_data = body.get("new_member", {})
 
         date_of_birth = user_data.get("personal_data", {}).get("date_birth", "01/01/1900")
@@ -40,6 +41,7 @@ def create_prompt(body: json) -> str:
         for placeholder, value in fields.items():
             prompt = prompt.replace(placeholder, value)
 
+        print('[INFO] Retornando Prompt para API OpenAI')
         return prompt
 
     except FileNotFoundError:

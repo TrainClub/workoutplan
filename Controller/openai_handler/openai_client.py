@@ -3,6 +3,7 @@ from Controller.aws_handler.aws_services import parameter_store
 
 def call_openai(prompt):
     try:
+        print('[INFO] Iniciando criação do treino para usuario')
         api_key = parameter_store(parameter_name="/openai/api_key")  # Obtendo a API Key
         client = openai.Client(api_key=api_key)  # Passando a chave diretamente para o cliente
         response = client.chat.completions.create(
@@ -19,6 +20,7 @@ def call_openai(prompt):
 
         content = response.choices[0].message.content
         if content:
+            print('[INFO] Treino criado com sucesso.')
             return content
         else:
             raise ValueError("Resposta não contém o conteúdo esperado.")
