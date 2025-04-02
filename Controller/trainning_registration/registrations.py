@@ -1,6 +1,3 @@
-from datetime import datetime
-import json
-
 class DataProcessor:
     def __init__(self, event, workout_event=None):
         self.event = event or {}
@@ -8,7 +5,27 @@ class DataProcessor:
         self.created_at = datetime.utcnow().isoformat()
         self.user_data = self.event.get('new_member', {}).get('user_data', {})
         self.user_id = self.user_data.get('user_id')
-    
+
+    def _format_map(self, data):
+        """Converte um dicionário para o formato do DynamoDB."""
+        if not isinstance(data, dict):
+            raise ValueError("Invalid data format, expected dict")
+        
+        formatted = {}
+        for key, value in data.items():
+            if isinstance(value, str):
+                formatted[key] = {'S': value}
+            elif isinstance(value, int) or isinstance(value, float):
+                formatted[key] = {'N': str(value)}
+            elif isinstance(value, dict):
+                formatted[key] = {'M': self._format_map(value)}
+            elif isinstance(value, list):
+                formatted[key] = {'L': [{'M': self._format_map(item)} for item in value]}
+            else:
+                raise ValueError(f"Unsupported data type: {type(value)} for key {key}")
+        
+        return formatted
+
     def _get_user_id(self):
         try:
             if not self.user_id:
@@ -33,47 +50,42 @@ class DataProcessor:
         except Exception as err:
             print(f"[ERROR] _workout_create_status: {err}")
             return None
-    
+        
     def _create_workout_plans(self):
         try:
             if not self.workout_event:
                 raise ValueError("[ERROR] Missing workout_event for workout_plans")
             
-            workout_plan = self.workout_event.get('training_plan')
-            if not workout_plan:
-                raise ValueError("[ERROR] Missing workout plan data in workout_event")
-            
             user_id = self._get_user_id()
             if not user_id:
                 raise ValueError("[ERROR] User ID is None")
             
+            workout_plan = self.workout_event
             workout_items = []
-            for day_plan in workout_plan:
-                dia_treino = day_plan.get('day')
+
+            for day, dia_treino in workout_plan.items():
                 if not dia_treino:
-                    raise ValueError("[ERROR] Missing 'day' in workout plan")
+                    raise ValueError("[ERROR] Missing workout plan data for a day")
                 
-                for exercicio in day_plan.get('exercises', []):
-                    required_keys = ['name', 'muscle_groups', 'sets', 'reps', 'tips', 'alternatives', 'affected_muscles']
-                    if not all(key in exercicio for key in required_keys):
-                        raise ValueError(f"[ERROR] Missing required fields in exercise data: {exercicio}")
-                    
-                    try:
-                        item = {
-                            "PK": {'S': f"USER#{user_id}"},
-                            "SK": {'S': f"Treino#{dia_treino}#Exercicio#{exercicio['name']}"},
-                            "MuscleGroups": {'S': exercicio['muscle_groups']},
-                            "Sets": {'N': str(int(exercicio['sets']))},
-                            "Reps": {'S': str(int(exercicio['reps']))},
-                            "Tips": {'S': exercicio['tips']},
-                            "Alternatives": {'S': json.dumps(exercicio['alternatives'], ensure_ascii=False)},
-                            "AffectedMuscles": {'S': json.dumps(exercicio['affected_muscles'], ensure_ascii=False)},
-                            "created_at": {'S': self.created_at}
-                        }
-                        workout_items.append(item)
-                    except (TypeError, ValueError) as parse_err:
-                        print(f"[ERROR] Parsing exercise data: {parse_err}")
-                        continue
+                try:
+                    item = {
+                        "PK": {'S': f"USER#{user_id}"},
+                        "SK": {'S': f"Treino#{day}"},
+                        "Foco": {'S': dia_treino['Foco']},
+                        "Aquecimento": {'M': self._format_map(dia_treino['Aquecimento'])},
+                        "Exercícios": {'L': [
+                            {'M': self._format_map(ex)} for ex in dia_treino['Exercícios']
+                        ]},
+                        "Core": {'L': [
+                            {'M': self._format_map(ex)} for ex in dia_treino['Core']
+                        ]},
+                        "Cardio": {'M': self._format_map(dia_treino['Cardio'])},
+                        "created_at": {'S': self.created_at}
+                    }
+                    workout_items.append(item)
+                except (TypeError, ValueError) as parse_err:
+                    print(f"[ERROR] Parsing exercise data: {parse_err}")
+                    continue
             
             return workout_items
         except Exception as err:
